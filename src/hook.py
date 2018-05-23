@@ -18,6 +18,18 @@ def get_true_and_prediction(scores, y_data):
         true_and_prediction.append((true_tag, predicted_tag))
     return true_and_prediction
 
+def save_scores(scores, y_data, fname):
+    assert(len(scores) == len(y_data))
+    assert(len(scores[0]) == len(y_data[0]))
+    print len(scores)
+    print len(scores[0])
+
+    with open(fname, "w+") as fw:
+        for i in range(len(scores)):
+            s = [str(ss) for ss in scores[i]]
+            l = [str(ll) for ll in y_data[i]]
+            fw.write("{}\t{}\n".format(" ".join(s), " ".join(l)))
+
 def acc_hook(scores, y_data):
     true_and_prediction = get_true_and_prediction(scores, y_data)
     print("     strict (p,r,f1):",strict(true_and_prediction))

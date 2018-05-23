@@ -2,6 +2,7 @@
 import tensorflow as tf
 import numpy as np
 import sys
+import os
 sys.path.append('../../')
 sys.path.append('../')
 from create_prior_knowledge import create_prior
@@ -67,8 +68,6 @@ class Model:
         self.left_context = self.context[:self.context_length]
         self.right_context = self.context[self.context_length+1:]
 
-
-
         # Averaging Encoder
         if encoder == "averaging":
             self.left_context_representation  = tf.add_n(self.left_context)
@@ -127,8 +126,12 @@ class Model:
         self.optim = tf.train.AdamOptimizer(self.learning_rate).minimize(self.loss)
 
         # Session
+        os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+        gpu_config = tf.ConfigProto()
+        gpu_config.log_device_placement = False
+        gpu_config.gpu_options.allow_growth=True
         self.init = tf.initialize_all_variables()
-        self.session = tf.Session()
+        self.session = tf.Session(config = gpu_config)
         self.session.run(self.init)
 
     def train(self, context_data, mention_representation_data, target_data, feature_data=None):
@@ -160,11 +163,16 @@ class Model:
             feed[self.context[i]] = context_data[:,i,:]
         return self.session.run(self.distribution,feed_dict=feed)
 
-    def save(self):
-        pass
+    def save(self, save_path):
+        self.saver = tf.train.Saver()
+        #save the model
+        print("save model to:", self.saver.save(self.session, save_path))
 
-    def load(self):
-        pass
+    def load(self, save_path):
+        self.saver = tf.train.Saver()
+        # Session
+        self.saver.restore(self.session, save_path)
+        print("restore model from:{}".format(save_path))
 
     def save_label_embeddings(self):
         pass
