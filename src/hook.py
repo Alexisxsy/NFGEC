@@ -27,8 +27,8 @@ def save_scores(scores, y_data, fname):
     with open(fname, "w+") as fw:
         for i in range(len(scores)):
             s = [str(ss) for ss in scores[i]]
-            l = [str(ll) for ll in y_data[i]]
-            fw.write("{}\t{}\n".format(" ".join(s), " ".join(l)))
+            # l = [str(ll) for ll in y_data[i]]
+            fw.write("{}\n".format(" ".join(s)))
 
 def acc_hook(scores, y_data):
     true_and_prediction = get_true_and_prediction(scores, y_data)
@@ -36,10 +36,14 @@ def acc_hook(scores, y_data):
     print("loose macro (p,r,f1):",loose_macro(true_and_prediction))
     print("loose micro (p,r,f1):",loose_micro(true_and_prediction))
 
+    return loose_micro(true_and_prediction)[-1]
+
 def save_predictions(scores, y_data, id2label, fname):
     true_and_prediction = get_true_and_prediction(scores, y_data)
-    with open(fname,"w") as f:
+    with open(fname + ".tsv","w") as f:
         for t, p in true_and_prediction:
             f.write(" ".join([id2label[id] for id in t]) + "\t" + " ".join([id2label[id] for id in p]) + "\n")
     f.close()
+
+
     

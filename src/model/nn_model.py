@@ -34,7 +34,7 @@ class Model:
 
         # Argument Checking
         assert(encoder in ["averaging", "lstm", "attentive"])
-        assert(type in ["figer", "gillick"])
+        assert(type in ["figer", "gillick", "conll"])
         self.type = type
         self.encoder = encoder
         self.hier = hier
@@ -43,8 +43,10 @@ class Model:
         # Hyperparameters
         self.context_length = 10
         self.emb_dim = 300
-        self.target_dim = 113 if type == "figer" else 89
-        self.feature_size = 600000 if type == "figer" else 100000
+        # self.target_dim = 113 if type == "figer" else 89
+        self.target_dim = {"figer":113, "gillick":89, "conll":114}[type]
+        self.feature_size = {"figer":600000, "gillick":100000, "conll":0}
+        # self.feature_size = 600000 if type == "figer" else 100000
         self.learning_rate = 0.001
         self.lstm_dim = 100
         self.att_dim  = 100 # dim of attention module
@@ -107,7 +109,8 @@ class Model:
             self.representation = tf.concat(1, [self.mention_representation_dropout, self.context_representation])
 
         if hier:
-            _d = "Wiki" if type == "figer" else "OntoNotes"
+            # _d = "Wiki" if type == "figer" else "OntoNotes"
+            _d = {"figer":"Wiki", "gillick":"OntoNotes","conll":"conll"}[type]
             S = create_prior("./resource/"+_d+"/label2id_"+type+".txt")
             assert(S.shape == (self.target_dim, self.target_dim))
             self.S = tf.constant(S,dtype=tf.float32)
@@ -126,7 +129,7 @@ class Model:
         self.optim = tf.train.AdamOptimizer(self.learning_rate).minimize(self.loss)
 
         # Session
-        os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+        os.environ["CUDA_VISIBLE_DEVICES"] = "1"
         gpu_config = tf.ConfigProto()
         gpu_config.log_device_placement = False
         gpu_config.gpu_options.allow_growth=True
